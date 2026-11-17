@@ -31,13 +31,15 @@ const TYPES = ['Reels', '季度主片', '其他'];
 const STATUSES = ['待製作', '拍攝中', '剪輯中', '待審核', '修改中', '已完成'];
 const ROLE_BY_LABEL = { '管理者': 'admin', '攝影師': 'editor', '檢視者': 'viewer' };
 const ROLE_NAME = { admin: '管理者', editor: '攝影師', viewer: '檢視者' };
-const BASE = { matrix: [[3, 3, 0], [1, 3, 1], [0, 2, 1]], hours: 40, available: 160, other: 32, edit: 3, dcount: 0, dpoints: 12 };
+const BASE = { matrix: [[3, 3, 0], [1, 3, 1], [0, 2, 1]], hours: 40, available: 160, other: 32, edit: 3, dcount: 0, dpoints: 12, basepts: 28 };
+const DEFAULT_BASEPTS = 28;
 const NUM_KEYS = ['hours', 'available', 'other', 'edit', 'dcount', 'dpoints'];
 
 const PEOPLE_HEAD = ['信箱', '姓名', '身分'];
 const CFG_HEAD = ['月份']
   .concat(...BRANDS.map(b => GRADES.map(g => b + ' ' + g + '級')))
-  .concat(['外拍時數', '正常工時預算', '其他預排工時', '每點後製工時', 'D級專案數', 'D級每案點數', '更新時間', '更新者']);
+  .concat(['外拍時數', '正常工時預算', '其他預排工時', '每點後製工時', 'D級專案數', 'D級每案點數', '更新時間', '更新者', '基準點數']);
+const CFG_BASEPTS_COL = CFG_HEAD.length; // 第 19 欄，放在最後才不會打亂舊資料
 const ROW_HEAD = ['ID', '月份', '影片／專案名稱', '品牌', '分級', '類型', '交期', '狀態', '完成', '更新時間', '更新者'];
 const LOG_HEAD = ['時間', '人員', '動作', '月份', '內容'];
 
@@ -104,7 +106,7 @@ function setup() {
   const log = ensureSheet_(ss, SHEET.log, LOG_HEAD);
   // 文字格式：避免 Google 試算表把「2026-11」「2026-11-20」自動轉成日期
   cfg.getRange('A:A').setNumberFormat('@');
-  cfg.getRange(1, CFG_HEAD.length - 1, cfg.getMaxRows(), 1).setNumberFormat('@');
+  cfg.getRange(1, CFG_HEAD.indexOf('更新時間') + 1, cfg.getMaxRows(), 1).setNumberFormat('@');
   ['A:A', 'B:B', 'G:G', 'J:J'].forEach(a => rows.getRange(a).setNumberFormat('@'));
   ['A:A', 'D:D'].forEach(a => log.getRange(a).setNumberFormat('@'));
   // 「身分」欄做成下拉選單
@@ -233,6 +235,7 @@ function readCfgMap_() {
     if (!/^\d{4}-\d{2}$/.test(m)) return;
     const c = { matrix: BRANDS.map((b, bi) => GRADES.map((g, gi) => num_(r[1 + bi * 3 + gi]))) };
     NUM_KEYS.forEach((k, ki) => { c[k] = num_(r[10 + ki]); });
+    c.basepts = num_(r[CFG_BASEPTS_COL - 1]) || DEFAULT_BASEPTS;
     map[m] = { row: i + 2, cfg: c };
   });
   return map;
@@ -305,6 +308,7 @@ function cleanCfg_(c) {
   c = c || {};
   const out = { matrix: BRANDS.map((b, i) => GRADES.map((g, j) => Math.min(100, Math.round(num_(((c.matrix || [])[i] || [])[j]))))) };
   NUM_KEYS.forEach(k => { out[k] = Math.min(300, num_(c[k])); });
+  out.basepts = Math.min(500, Math.round(num_(c.basepts))) || DEFAULT_BASEPTS;
   return out;
 }
 
@@ -334,7 +338,8 @@ function newId_() { return 'v' + Utilities.getUuid().replace(/-/g, '').slice(0, 
 function writeCfg_(month, cfg, me) {
   const sh = sheet_(SHEET.cfg, CFG_HEAD);
   const map = readCfgMap_();
-  const line = [month].concat([].concat(...cfg.matrix), NUM_KEYS.map(k => cfg[k]), [stamp_(), me.name]);
+  sh.getRange(1, 1, 1, CFG_HEAD.length).setValues([CFG_HEAD]); // 舊表補上「基準點數」欄名
+  const line = [month].concat([].concat(...cfg.matrix), NUM_KEYS.map(k => cfg[k]), [stamp_(), me.name, cfg.basepts]);
   if (map[month]) sh.getRange(map[month].row, 1, 1, line.length).setValues([line]);
   else sh.appendRow(line);
 }
