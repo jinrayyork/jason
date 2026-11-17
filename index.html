@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jason 工作追蹤</title>
+<meta name="theme-color" content="#0b1120">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jason 工作">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  // ▼ 儀表板網址：Apps Script「部署 → 管理部署作業」裡的網頁應用程式網址（結尾是 /exec）
+  var TARGET = 'APPS_SCRIPT_EXEC_URL';
+
+  var ready = /^https:\/\/script\.google\.com\/.+\/exec$/.test(TARGET);
+  // 只有「從主畫面圖示啟動」才自動跳轉；在瀏覽器裡開這一頁會停在入口畫面，方便加到主畫面
+  var fromHomeScreen = window.navigator.standalone === true ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if (ready && fromHomeScreen) {
+    document.documentElement.className = 'launching';
+    location.replace(TARGET);
+  }
+</script>
+<style>
+  :root{font-family:Inter,'Noto Sans TC',system-ui,-apple-system,'Microsoft JhengHei',sans-serif;color:#e9edf5;background:#0b1120}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;background:radial-gradient(1000px 500px at 50% -10%,#16233a 0%,#0b1120 60%)}
+  .launching main{visibility:hidden}
+  main{width:100%;max-width:440px;text-align:center}
+  .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+  h1{font-size:28px;margin:22px 0 6px;letter-spacing:-.3px}
+  .sub{color:#9caac1;font-size:14px;margin:0 0 28px}
+  .btn{display:block;width:100%;padding:16px;border-radius:14px;background:#497ee7;color:#fff;text-decoration:none;font-weight:700;font-size:17px}
+  .btn:active{transform:scale(.99)}
+  .btn.off{background:#25354b;color:#9caac1;pointer-events:none}
+  .card{margin-top:22px;background:#141e30;border:1px solid #29364a;border-radius:16px;padding:18px 20px;text-align:left;font-size:14px;line-height:1.75;color:#c9d5e8}
+  .card h2{font-size:15px;margin:0 0 8px;color:#e9edf5}
+  .card ol{margin:0;padding-left:20px}
+  .roles{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+  .roles b{display:inline-block;min-width:58px}
+  .ios,.android{display:none}
+  .is-ios .ios,.is-android .android,.is-other .ios,.is-other .android{display:block}
+  .fine{color:#7f8da5;font-size:12px;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="icon-192.png" alt="">
+  <h1>Jason 工作追蹤</h1>
+  <p class="sub">影片產量、交期與交付進度，即時同步</p>
+  <a id="go" class="btn" href="#">打開儀表板</a>
+
+  <div class="card">
+    <h2>使用方式</h2>
+    <ul class="roles">
+      <li><b>同事</b>直接打開即可檢視，不用密碼</li>
+      <li><b>Jason</b>右上角輸入攝影師密碼，可新增、修改、刪除影片</li>
+      <li><b>管理者</b>輸入管理者密碼，可調整品牌配額與工時</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>加到手機主畫面</h2>
+    <ol class="ios">
+      <li><b>iPhone：</b>用 Safari 打開這一頁</li>
+      <li>點下方「分享」按鈕 → 「加入主畫面」</li>
+      <li>之後點主畫面圖示就會直接進入儀表板</li>
+    </ol>
+    <ol class="android">
+      <li><b>Android：</b>用 Chrome 打開這一頁</li>
+      <li>點右上「⋮」→「加到主畫面」</li>
+      <li>之後點主畫面圖示就會直接進入儀表板</li>
+    </ol>
+  </div>
+  <p class="fine">第一次打開可能需要登入 Google 帳號。</p>
+</main>
+<script>
+  var ua = navigator.userAgent;
+  document.body.className = /iPhone|iPad|iPod/.test(ua) ? 'is-ios' : /Android/.test(ua) ? 'is-android' : 'is-other';
+  var go = document.getElementById('go');
+  if (ready) { go.href = TARGET; }
+  else { go.className = 'btn off'; go.textContent = '儀表板網址尚未設定'; }
+</script>
+</body>
+</html>
