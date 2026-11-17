@@ -116,6 +116,12 @@ function setup() {
   ss.setActiveSheet(people);
 }
 
+/** 第一次使用或改版後執行一次：讓 Google 跳出「連線到外部服務」的授權（登入驗證需要） */
+function authorize() {
+  UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=test', { muteHttpExceptions: true });
+  Logger.log('授權完成，可以關掉這個視窗了');
+}
+
 function clearSessions() {
   const props = PropertiesService.getScriptProperties();
   Object.keys(props.getProperties()).forEach(k => { if (k.indexOf('sess_') === 0) props.deleteProperty(k); });
